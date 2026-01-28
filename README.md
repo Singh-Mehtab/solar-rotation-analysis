@@ -4,9 +4,9 @@ Quantifying the Sun's differential rotation rate by implementing 3D heliographic
 ## Project Overview
 Unlike a solid body, the Sun rotates faster at its equator than at its poles. This differential rotation is fundamental to the solar dynamo and the generation of magnetic fields. 
 
-Sunspots are temporary phenomena on the Sun's photosphere that appear as dark spots caused by concentrations of magnetic flux that inhibit convection. Crucially they maintain a fixed latitude throughout their lifetime. This characteristic makes them ideal for measuring the rotation rate of the Sun at specific latitudes.
+Sunspots are temporary phenomena on the Sun's photosphere that appear as dark spots caused by concentrations of magnetic flux that inhibit convection. Crucially, they generally maintain a fixed latitude throughout their lifetime. This characteristic makes them ideal for measuring the rotation rate of the Sun at specific latitudes.
 
-This projects analyzes 5,000+ images taken from January to December 2024 by the Solar Dynamics Observatory (SDO) to locate, track, and analyze 110+ sunspots. The created program detects sunspots, transforms their 2D pixel coordinates into 3D heliographic coordinates, and determines their latitude and angular velocity. 
+This project analyzes 5,000+ images taken from January to December 2024 by the Solar Dynamics Observatory (SDO) to locate, track, and analyze 110+ sunspots. The created program detects sunspots, transforms their 2D pixel coordinates into 3D heliographic coordinates, and determines their latitude and angular velocity. 
 
 <p align="center">
   <img src="graphs/sunspot.gif" width="400" alt="Sunspot Tracking Animation">
@@ -51,79 +51,69 @@ However, because the SDO spacecraft is orbiting Lagrange Point 1, its distance a
 
 The final model equation takes into account the foreshortening effects of imaging a sphere with a 2-dimensional image in both the x and y axes. It also treats $R_\text{Sun}(t)$ and $B_0(t)$ as values that vary over time.
 
-$$X(t) = (R_{\text{Sun}}^2(t)- \delta ^2)\sin^2(\omega[t-t_{0}])$$
-$$Y(t) = R_{\text{Sun}}(t)[\sin(\delta)\cos(B_{0}(t))-\cos(\delta)\sin(B_{0}(t))\cos(\omega(t-t_{0}))]$$
-$$d(\omega,t) = \sqrt{X(t)^2 + Y(t)^2}= \sqrt{\left((R_\text{Sun}(t)^2- \delta ^2)\sin^2(\omega[t-t_{0}])\right)^2 +   \left(R_\text{Sun}(t)[\sin(\delta)\cos(B_{0}(t))-\cos(\delta)\sin(B_{0}(t)\cos(\omega(t-t_{0}))]\right)^2}.$$
+$$
+X(t) = (R_{\text{Sun}}^2(t)- \delta ^2)\sin^2(\omega[t-t_{0}])
+$$
+
+$$
+Y(t) = R_{\text{Sun}}(t)[\sin(\delta)\cos(B_{0}(t))-\cos(\delta)\sin(B_{0}(t))\cos(\omega(t-t_{0}))]
+$$
+
+$$
+d(\omega,t) = \sqrt{X(t)^2 + Y(t)^2}= \sqrt{\left((R_\text{Sun}(t)^2- \delta ^2)\sin^2(\omega[t-t_{0}])\right)^2 +   \left(R_\text{Sun}(t)[\sin(\delta)\cos(B_{0}(t))-\cos(\delta)\sin(B_{0}(t)\cos(\omega(t-t_{0}))]\right)^2}.
+$$
 
 ### $\chi ^2$ Minimization
-Using $\chi ^2$ analysis on the model equation, the varied parameters are $\delta$, $\omega$, and $t_0$. For each sunspot a best fit curve is calculated, the optimized parameters are recorded, and the following graph is created.
+A $\chi ^2$ analysis with varied parameters of $\delta$, $\omega$, and $t_0$ was done for every sunspot using the model equation. For each sunspot a best fit curve is calculated, the values of the angular velocity, $\omega$, and the latitude, $\delta$, are saved, and the following graph is created.
 
-
-
-sidereal versus other.
+<p align="center">
+  <img src="graphs/Example_Sunspot_Graph.png" height="374">
+  <br>
+  <sub>The distance of sunspot 3702 from the center of the Sun over time.</sub>
+</p>
 
 ## Differential Rotation Analysis
+Once the latitude and angular velocity for every sunspot are calculated, graphing the latitude versus angular velocity illustrates the differential rotational nature of the Sun.
 ### Model Equation
+The equation describing the differential rotation rate of the Sun is
+
 $$
-\omega = \text{A} + \text{B}\sin^2(\varphi) + \text{C} \sin ^4 (\varphi).
+\omega = \text{A} + \text{B}\sin^2(\varphi) + \text{C} \sin ^4 (\varphi),
 $$
 
-use $\chi ^2$ minimization to determine A, B, and C. 
-
-### Error Analysis
-$$
-\alpha _j = \sqrt {C_{jj}}.
-$$
+where A, B, and C are all constants. Using $\chi ^2$ minimization, the optimized values of A, B, and C that best fit the sunspot data can be determined.
 
 ### Final Results
+Plotting $\omega$ versus $d$ and $|d|$ yields the following graphs.
 <p align="center">
   <img src="graphs/Latitude-Angular_Velocity-Plot.png" height="374">
   <br>
   <sub>Latitude versus angular velocity for each sunspot examined.</sub>
 </p>
-
-
-
 <p align="center">
   <img src="graphs/Absolute_Latitude-Angular_Velocity-Plot.png" height="374">
   <br>
-  <sub>Animation of images taken by SDO's HMI instrument.</sub>
+  <sub>Absolute latitude versus angular velocity.</sub>
 </p>
 
+<div align="center">
+    
+| | Calculated Value (rad/h) | Theoretical Value (rad/h) | Difference (rad/h) | Percent Difference | | Uncertainty (rad/h) | Percent Uncertainty|
+| :--- | :---: | :---: | :---: | :---: |:---: |:---: |:---: |
+| **A** | 0.010713 | 0.010700 | 0.000013 | 0.13% | | 0.000003 | 0.024% |
+| **B** | -0.004064 | -0.001742 |  -0.002322 |  -57.13%| | 0.000052 |  -1.287% |
+| **C** | 0.006497 | -0.001300 | 0.007796 | 120.00% | | 0.000229 | 3.528% | 
 
-## Methodology
-The pipeline consists of two primary stages: **Feature Extraction** and **Velocity Modeling**.
+</div>
 
-### 1. Image Processing & Coordinate Transformation
-Raw images are processed to identify sunspots using intensity thresholding and contour detection. To convert 2D image coordinates $(x, y)$ into physical 3D Heliographic coordinates (Latitude $\phi$, Longitude $L$), the pipeline applies rigorous geometric corrections:
 
-* **Spherical Projection Correction:** Corrects for foreshortening near the solar limb, where sunspots appear compressed.
-* **Carrington Elements:** Accounts for the Earth's changing viewing angle:
-    * **$B_0$ Angle:** The tilt of the Sun's rotational axis toward Earth (Heliographic latitude of the central point).
-    * **$L_0$ Angle:** The Heliographic longitude of the central meridian.
-    * **$P$ Angle:** The position angle of the solar north pole.
-* **Earth-Sun Distance Variation:** Corrects for the change in the Sun's apparent angular radius ($\sim$31.6' to $\sim$32.7') due to Earth's elliptical orbit.
+#### Errors
+The errors are calcualted from the covariance matrix as
 
-### 2. Tracking & Fitting
-Sunspots are tracked across consecutive frames. The angular velocity $\omega$ is calculated for each track and fitted to the standard solar differential rotation law:
+$$
+\alpha _j = \sqrt {C_{jj}}.
+$$
 
-$$\omega(\phi) = A + B \sin^2(\phi) + C \sin^4(\phi)$$
-
-Where:
-* $A$: Equatorial rotation rate.
-* $B, C$: Differential rotation coefficients (typically negative, indicating slower rotation at poles).
-
-## Results
-The pipeline successfully recovered the Sun's differential rotation profile.
-
-* **Equatorial Rotation ($A$):** Calculated as **$0.0107$ units** (approx. 25-day period), matching theoretical values with a **0.12% difference**.
-* **Differential Gradient:** Confirmed the latitude-dependent velocity decrease, with tracking data showing distinct bands of slower rotation at higher latitudes.
-
-<p align="center">
-  <img src="images/latitude_velocity_plot.png" width="600" alt="Latitude vs Angular Velocity Fit">
-  <br>
-  <sub>Fit of Solar Latitude vs. Angular Velocity. The red line represents the differential rotation model $\omega(\phi) = A + B \sin^2(\phi) + C \sin^4(\phi)$.</sub>
-</p>
 
 ## Instructions to Run
 1.  **Clone the repository:**
@@ -139,7 +129,3 @@ The pipeline successfully recovered the Sun's differential rotation profile.
 3.  **Run the analysis:**
     * Run `notebooks/sunspot_tracking.ipynb` to process images and generate coordinate data.
     * Run `notebooks/solar_rotation.ipynb` to perform the curve fitting and generate plots.
-
-## Acknowledgments
-* Data courtesy of NASA/SDO and the HMI science team.
-* Carrington element calculations based on standard solar coordinate algorithms.
